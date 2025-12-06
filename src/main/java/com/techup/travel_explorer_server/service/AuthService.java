@@ -4,6 +4,8 @@ import com.techup.travel_explorer_server.dto.auth.AuthResponse;
 import com.techup.travel_explorer_server.dto.auth.LoginRequest;
 import com.techup.travel_explorer_server.dto.auth.RegisterRequest;
 import com.techup.travel_explorer_server.entity.User;
+import com.techup.travel_explorer_server.exception.EmailAlreadyExistsException;
+import com.techup.travel_explorer_server.exception.ResourceNotFoundException;
 import com.techup.travel_explorer_server.repository.UserRepository;
 import com.techup.travel_explorer_server.security.JwtService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
         
         User user = User.builder()
@@ -59,7 +61,7 @@ public class AuthService {
         );
         
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
         String token = jwtService.generateToken(userDetails, user.getId());
@@ -74,7 +76,7 @@ public class AuthService {
     
     public AuthResponse getCurrentUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         
         return AuthResponse.builder()
                 .email(user.getEmail())
