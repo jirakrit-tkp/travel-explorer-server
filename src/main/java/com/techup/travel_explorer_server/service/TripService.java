@@ -6,6 +6,7 @@ import com.techup.travel_explorer_server.dto.trip.TripSummaryResponse;
 import com.techup.travel_explorer_server.dto.trip.UpdateTripRequest;
 import com.techup.travel_explorer_server.entity.Trip;
 import com.techup.travel_explorer_server.entity.User;
+import com.techup.travel_explorer_server.exception.ResourceNotFoundException;
 import com.techup.travel_explorer_server.repository.TripRepository;
 import com.techup.travel_explorer_server.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class TripService {
     
     public TripDetailResponse getTripById(Long id) {
         Trip trip = tripRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trip not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Trip", id));
         return toDetailResponse(trip);
     }
     
@@ -53,7 +54,7 @@ public class TripService {
     @Transactional
     public TripDetailResponse createTrip(CreateTripRequest request, Long userId) {
         User author = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         
         Trip trip = Trip.builder()
                 .title(request.getTitle())
@@ -72,7 +73,7 @@ public class TripService {
     @Transactional
     public TripDetailResponse updateTrip(Long tripId, UpdateTripRequest request, Long userId) {
         Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new RuntimeException("Trip not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Trip", tripId));
         
         if (!trip.getAuthor().getId().equals(userId)) {
             throw new AccessDeniedException("You can only edit your own trips");
@@ -104,7 +105,7 @@ public class TripService {
     @Transactional
     public void deleteTrip(Long tripId, Long userId) {
         Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new RuntimeException("Trip not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Trip", tripId));
         
         if (!trip.getAuthor().getId().equals(userId)) {
             throw new AccessDeniedException("You can only delete your own trips");

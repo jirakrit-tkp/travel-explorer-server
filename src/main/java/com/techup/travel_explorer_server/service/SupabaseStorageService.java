@@ -1,5 +1,6 @@
 package com.techup.travel_explorer_server.service;
 
+import com.techup.travel_explorer_server.exception.FileUploadException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -77,7 +78,7 @@ public class SupabaseStorageService {
                     supabaseUrl, bucket, uniqueFilename);
             
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload file to Supabase: " + e.getMessage(), e);
+            throw new FileUploadException("Failed to upload file to Supabase: " + e.getMessage(), e);
         }
     }
     
@@ -95,7 +96,7 @@ public class SupabaseStorageService {
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to delete file from Supabase: " + e.getMessage(), e);
+            throw new FileUploadException("Failed to delete file from Supabase: " + e.getMessage(), e);
         }
     }
 }
